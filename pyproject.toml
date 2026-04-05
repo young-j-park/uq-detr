@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uq-detr"
+version = "0.1.0"
+description = "Uncertainty Quantification in Detection Transformers: Object-Level Calibration and Image-Level Reliability"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    {name = "Young-Jin Park", email = "youngp@mit.edu"},
+    {name = "Carson Sobolewski", email = "csobo@mit.edu"},
+    {name = "Navid Azizan", email = "azizan@mit.edu"},
+]
+keywords = ["object-detection", "calibration", "uncertainty-quantification", "detr", "transformer"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.20",
+    "scipy>=1.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+docs = ["mkdocs-material"]
+
+[project.urls]
+Homepage = "https://github.com/young-j-park/uq-detr"
+Paper = "https://arxiv.org/abs/2412.01782"
+
+[tool.setuptools.packages.find]
+where = ["src"]

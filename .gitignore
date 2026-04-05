@@ -1,3 +1,8 @@
+# Paper, generated figures, and notebooks
+arxiv_tpami.pdf
+*.png
+notebooks/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

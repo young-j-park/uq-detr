@@ -1,0 +1,39 @@
+site_name: UQ-DETR
+site_url: https://young-j-park.github.io/uq-detr
+repo_url: https://github.com/young-j-park/uq-detr
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+  features:
+    - content.code.copy
+    - navigation.sections
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Metrics:
+    - Overview: metrics/overview.md
+    - OCE: metrics/oce.md
+    - D-ECE: metrics/dece.md
+    - LA-ECE: metrics/laece.md
+    - LRP: metrics/lrp.md
+    - ContrastiveConf: metrics/contrastive-conf.md
+  - Utilities:
+    - Post-Processing: utilities/postprocess.md
+    - Hungarian Matching: utilities/hungarian.md
+    - Box Conversion: utilities/box-convert.md
+  - Examples:
+    - HuggingFace DETR: examples/huggingface.md
+    - COCO Evaluation: examples/coco.md
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
