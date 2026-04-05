@@ -798,6 +798,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Notes on HuggingFace DETR Outputs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#activation-softmax-vs-sigmoid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activation: Softmax vs Sigmoid
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -912,6 +929,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Notes on HuggingFace DETR Outputs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#activation-softmax-vs-sigmoid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Activation: Softmax vs Sigmoid
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -974,13 +1008,17 @@
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
 
-    <span class="c1"># Raw DETR outputs (all queries, before post-processing)</span>
-    <span class="n">logits</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>   <span class="c1"># (Q, C)</span>
+    <span class="c1"># Raw outputs (all queries, before post-processing)</span>
+    <span class="n">raw_logits</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>          <span class="c1"># (Q, C)</span>
     <span class="n">boxes</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">pred_boxes</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>           <span class="c1"># (Q, 4) cxcywh normalized</span>
     <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">width</span>
 
+    <span class="c1"># Apply activation (softmax for original DETR, sigmoid for later variants)</span>
+    <span class="c1"># probs = softmax(raw_logits, axis=-1)[:, :-1]  # original DETR</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">raw_logits</span><span class="p">))</span>        <span class="c1"># Deformable-DETR, DINO, RT-DETR</span>
+
     <span class="n">all_queries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">Detections</span><span class="o">.</span><span class="n">from_cxcywh</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">image_size</span><span class="o">=</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+        <span class="n">Detections</span><span class="o">.</span><span class="n">from_cxcywh</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">image_size</span><span class="o">=</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
     <span class="p">)</span>
     <span class="n">ground_truths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
         <span class="n">GroundTruth</span><span class="p">(</span><span class="n">boxes</span><span class="o">=</span><span class="n">annotation</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="n">annotation</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">])</span>
@@ -996,11 +1034,42 @@
 <h2 id="notes-on-huggingface-detr-outputs">Notes on HuggingFace DETR Outputs</h2>
 <p><code>model(**inputs)</code> returns the <strong>raw, unfiltered output</strong> from all object queries:</p>
 <ul>
-<li><strong><code>outputs.logits</code></strong>: shape <code>(batch, Q, C)</code>, <strong>pre-sigmoid</strong> raw logits. Apply <code>.sigmoid()</code> to get class probabilities.</li>
+<li><strong><code>outputs.logits</code></strong>: shape <code>(batch, Q, C)</code>, raw logits (pre-activation). See below for which activation to apply.</li>
 <li><strong><code>outputs.pred_boxes</code></strong>: shape <code>(batch, Q, 4)</code>, <strong>normalized cxcywh</strong> coordinates in [0, 1]. Use <code>Detections.from_cxcywh()</code> with <code>image_size</code> to convert to absolute xyxy.</li>
 </ul>
 <p>No filtering or post-processing is applied --- you get all Q queries (DETR: 100, Deformable-DETR: 300, DINO: 900). This is exactly what you want for OCE evaluation: pass the full query set and let <code>uq_detr.select()</code> handle post-processing.</p>
-<p>For RT-DETR and other DETR variants on HuggingFace, the same pattern applies --- only the model name changes.</p>
+<h3 id="activation-softmax-vs-sigmoid">Activation: Softmax vs Sigmoid</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Loss</th>
+<th>Activation</th>
+<th>Background class?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DETR (<code>facebook/detr-resnet-50</code>)</td>
+<td>Cross-entropy</td>
+<td><strong>Softmax</strong></td>
+<td>Yes (last class is "no object")</td>
+</tr>
+<tr>
+<td>Deformable-DETR, DINO, RT-DETR</td>
+<td>Focal loss</td>
+<td><strong>Sigmoid</strong></td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="c1"># Original DETR: softmax, then drop the background (last) class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">softmax</span>
+<span class="n">probs</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># Deformable-DETR, DINO, RT-DETR: sigmoid</span>
+<span class="n">probs</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">logits</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+</code></pre></div>
 <h2 id="using-the-huggingface-post-processor">Using the HuggingFace Post-Processor</h2>
 <p>If you prefer to use HuggingFace's built-in post-processing:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># HuggingFace post-processes into xyxy absolute coords</span>
