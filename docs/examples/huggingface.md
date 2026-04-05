@@ -34,13 +34,17 @@ for image, annotation in dataset:  # your COCO-style dataset
     with torch.no_grad():
         outputs = model(**inputs)
 
-    # Raw DETR outputs (all queries, before post-processing)
-    logits = outputs.logits.sigmoid().squeeze(0).numpy()   # (Q, C)
+    # Raw outputs (all queries, before post-processing)
+    raw_logits = outputs.logits.squeeze(0).numpy()          # (Q, C)
     boxes = outputs.pred_boxes.squeeze(0).numpy()           # (Q, 4) cxcywh normalized
     H, W = image.height, image.width
 
+    # Apply activation (softmax for original DETR, sigmoid for later variants)
+    # probs = softmax(raw_logits, axis=-1)[:, :-1]  # original DETR
+    probs = 1.0 / (1.0 + np.exp(-raw_logits))        # Deformable-DETR, DINO, RT-DETR
+
     all_queries.append(
-        Detections.from_cxcywh(boxes, logits, image_size=(H, W))
+        Detections.from_cxcywh(boxes, probs, image_size=(H, W))
     )
     ground_truths.append(
         GroundTruth(boxes=annotation["boxes"], labels=annotation["labels"])
@@ -58,12 +62,26 @@ for thr in [0.1, 0.3, 0.5, 0.7]:
 
 `model(**inputs)` returns the **raw, unfiltered output** from all object queries:
 
-- **`outputs.logits`**: shape `(batch, Q, C)`, **pre-sigmoid** raw logits. Apply `.sigmoid()` to get class probabilities.
+- **`outputs.logits`**: shape `(batch, Q, C)`, raw logits (pre-activation). See below for which activation to apply.
 - **`outputs.pred_boxes`**: shape `(batch, Q, 4)`, **normalized cxcywh** coordinates in [0, 1]. Use `Detections.from_cxcywh()` with `image_size` to convert to absolute xyxy.
 
 No filtering or post-processing is applied --- you get all Q queries (DETR: 100, Deformable-DETR: 300, DINO: 900). This is exactly what you want for OCE evaluation: pass the full query set and let `uq_detr.select()` handle post-processing.
 
-For RT-DETR and other DETR variants on HuggingFace, the same pattern applies --- only the model name changes.
+### Activation: Softmax vs Sigmoid
+
+| Model | Loss | Activation | Background class? |
+|-------|------|------------|-------------------|
+| DETR (`facebook/detr-resnet-50`) | Cross-entropy | **Softmax** | Yes (last class is "no object") |
+| Deformable-DETR, DINO, RT-DETR | Focal loss | **Sigmoid** | No |
+
+```python
+# Original DETR: softmax, then drop the background (last) class
+from scipy.special import softmax
+probs = softmax(outputs.logits.squeeze(0).numpy(), axis=-1)[:, :-1]
+
+# Deformable-DETR, DINO, RT-DETR: sigmoid
+probs = outputs.logits.sigmoid().squeeze(0).numpy()
+```
 
 ## Using the HuggingFace Post-Processor
 
