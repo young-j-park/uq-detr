@@ -4,10 +4,10 @@
 
 **A lightweight Python toolkit for object-level calibration and image-level reliability evaluation**
 
-[![PyPI](https://img.shields.io/pypi/v/uq-detr)](https://pypi.org/project/uq-detr)
-[![Python](https://img.shields.io/pypi/pyversions/uq-detr)](https://pypi.org/project/uq-detr)
+[![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)](https://github.com/young-j-park/uq-detr)
 [![License](https://img.shields.io/github/license/young-j-park/uq-detr)](https://github.com/young-j-park/uq-detr/blob/main/LICENSE)
 [![arXiv](https://img.shields.io/badge/arXiv-2412.01782-b31b1b.svg)](https://arxiv.org/abs/2412.01782)
+[![TPAMI](https://img.shields.io/badge/TPAMI-2026-blue)](https://arxiv.org/abs/2412.01782)
 
 [📘 Documentation](https://young-j-park.github.io/uq-detr) |
 [📄 Paper (TPAMI 2026)](https://arxiv.org/abs/2412.01782) |
