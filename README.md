@@ -21,14 +21,14 @@
 
 ## Highlight Results
 
-### Why OCE? Existing metrics miss the impact of post-processing
+### Why OCE? Existing calibration metrics have a structural pitfall
 
-D-ECE and LA-ECE decrease monotonically with higher confidence thresholds, failing to capture the calibration–accuracy trade-off. **OCE** (Object-level Calibration Error) reflects the true optimum, aligning with where AP peaks.
+D-ECE and LA-ECE achieve their optima at thresholds near 0 or 1 — since they **do not penalize missed detections (false negatives)**, they can reach near-zero error by retaining only a few highly confident predictions. In contrast, **OCE** exhibits a bell-shaped curve with its optimum around a practical threshold of ~0.3, aligning with common deployment choices.
 
 <div align="center">
 <img src="assets/fig1_threshold_vs_metrics.svg" width="500" alt="Metrics vs confidence threshold on COCO (Cal-DETR)">
 
-*Metrics vs. confidence threshold on COCO val (Cal-DETR). OCE identifies the practical sweet spot.*
+*Impact of confidence threshold on metrics (Cal-DETR on COCO). OCE identifies the practical sweet spot.*
 </div>
 
 ### Object-level calibration across models
