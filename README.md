@@ -8,11 +8,21 @@ Young-Jin Park, Carson Sobolewski, and Navid Azizan (MIT)
 
 ## Installation
 
+**Requirements:** Python >= 3.9
+
 ```bash
 pip install uq-detr
 ```
 
-**Dependencies:** `numpy`, `scipy` only. No PyTorch required.
+**Core dependencies:** `numpy >= 1.20`, `scipy >= 1.7` only. No PyTorch required.
+
+To run the [tutorials](tutorials/) (HuggingFace DETR inference on COCO), install the optional tutorial dependencies:
+
+```bash
+pip install uq-detr[tutorials]
+```
+
+This additionally installs `torch >= 1.10`, `transformers >= 4.30`, `datasets >= 2.14`, `timm >= 0.9`, and `matplotlib >= 3.5`.
 
 ## Quick Start
 
