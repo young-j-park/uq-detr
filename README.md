@@ -15,9 +15,7 @@
 [🚀 Quick Start](#quick-start) |
 [🤔 Issues](https://github.com/young-j-park/uq-detr/issues)
 
-**Uncertainty Quantification in Detection Transformers: Object-Level Calibration and Image-Level Reliability**
-
-Young-Jin Park, Carson Sobolewski, and Navid Azizan (MIT)
+[Young-Jin Park](https://young-j-park.github.io/), [Carson Sobolewski](https://csobolew.github.io/), and [Navid Azizan](https://azizan.mit.edu/) (MIT)
 
 </div>
 
