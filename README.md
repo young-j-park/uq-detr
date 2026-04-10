@@ -25,7 +25,7 @@
 
 D-ECE and LA-ECE achieve their optima at thresholds near 0 or 1 — they can reach near-zero error by retaining only a few highly confident predictions, or by flooding the metric with near-zero confidence predictions that are trivially well-calibrated. In contrast, **OCE** (Section V-B of the paper) averages the Brier score per ground-truth object, penalizing both miscalibrated and missing detections:
 
-$$\text{OCE} = \underset{o,\, l \,\sim\, \text{GT Objects and Labels}}{\text{AVERAGE}} \text{BrierScore}(\text{matched predictions per object } o, \text{ GT label } l)$$
+$$\text{OCE} = \underset{o, l \sim \text{GT Objects and Labels}}{\text{AVERAGE}} \text{BrierScore}(\text{matched predictions per object } o, \text{ GT label } l)$$
 
 This yields a bell-shaped curve with its optimum around a practical threshold of ~0.3, aligning with common deployment choices.
 
